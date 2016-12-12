@@ -1,0 +1,6 @@
+Django==1.10
+ecdsa==0.13
+Fabric3==1.12.post1
+paramiko==1.18.0
+pycrypto==2.6.1
+six==1.10.0
