@@ -18,8 +18,13 @@
     <h2>Our authors:</h2>
     {% for author in authors %}
         <ul>
+            {% if author.author__username == single_author %}
+            <li><h3><a href="{% url 'posts_author' author=author.author__username %}">{{ author.author__username}}</a>
+                ({{ author.author__username__count}})</h3></li>
+            {% else %}
             <li><h4><a href="{% url 'posts_author' author=author.author__username %}">{{ author.author__username}}</a>
                 ({{ author.author__username__count}})</h4></li>
+            {% endif %}
         </ul>
     {% endfor %}
 {% endblock %}

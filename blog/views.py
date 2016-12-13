@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
+from django.db.models import Count
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from .models import Post
@@ -9,7 +10,21 @@ from .forms import PostForm
 
 def post_list(request):
     posts = Post.objects.filter(published_date__lte=timezone.now()).order_by('published_date')
-    return render(request, 'blog/post_list.html', {'posts': posts})
+    authors = Post.objects.filter(published_date__lte=timezone.now()).values('author__username')\
+        .annotate(Count('author__username')).order_by('-author__username__count')
+    return render(request, 'blog/post_list.html', {'posts': posts, 'authors': authors})
+
+
+def posts_author(request, author):
+    posts = Post.objects.filter(author__username=author).filter(published_date__lte=timezone.now()).order_by('published_date')
+    authors = Post.objects.filter(published_date__lte=timezone.now()).values('author__username')\
+        .annotate(Count('author__username')).order_by('-author__username__count')
+    context = {
+        'posts': posts,
+        'authors': authors,
+        'single_author': author
+    }
+    return render(request, 'blog/posts_author.html', context)
 
 
 def post_detail(request, pk):
