@@ -1,4 +1,5 @@
 {% extends 'blog/base.html' %}
+{% load staticfiles%}
 {% block content %}
 {% for post in posts %}
     <div class="post">
@@ -8,11 +9,31 @@
         </div>
         <h1><a href="{% url 'post_detail' pk=post.pk %}">{{ post.title }}</a></h1>
         <p>{{ post.text|truncatechars:200 }}</p>
-        <!--<button type="button" class="btn btn-default" aria-label="Left Align">-->
-            <!--<span class="glyphicon glyphicon-heart" aria-hidden="true"></span> {{ post.votes.}}-->
-        <!--</button>-->
+        {% if user.is_authenticated %}
+            {% if post in user_likes %}
+                    <button type="button" class="btn btn-default likes liked" aria-label="Left Align"
+                            data-post="{{ post.pk }}" data-action="like-post">
+                        <span class="glyphicon glyphicon-heart" aria-hidden="true"></span>
+                        <span class="count">{{ post.num_votes}}</span>
+                    </button>
+            {% else %}
+                    <button type="button" class="btn btn-default likes" aria-label="Left Align"
+                            data-post="{{ post.pk }}" data-action="like-post">
+                        <span class="glyphicon glyphicon-heart" aria-hidden="true"></span>
+                        <span class="count">{{ post.num_votes}}</span>
+                    </button>
+            {% endif %}
+        {% else %}
+            <a href="{% url 'login' %}">
+                <button type="button" class="btn btn-default likes" aria-label="Left Align">
+                    <span class="glyphicon glyphicon-heart" aria-hidden="true"></span>
+                    <span class="count">{{ post.num_votes}}</span>
+                </button>
+            </a>
+        {% endif %}
     </div>
 {% endfor %}
+
 {% endblock %}
 {% block content1 %}
     <h2>Our authors:</h2>
@@ -23,3 +44,7 @@
         </ul>
     {% endfor %}
 {% endblock %}
+{% block js %}
+    <script src="{% static 'js/like.js' %}"></script>
+{% endblock %}
+
