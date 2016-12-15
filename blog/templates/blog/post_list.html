@@ -1,4 +1,5 @@
 {% extends 'blog/base.html' %}
+{% load staticfiles%}
 {% block content %}
 {% for post in posts %}
     <div class="post">
@@ -8,11 +9,28 @@
         </div>
         <h1><a href="{% url 'post_detail' pk=post.pk %}">{{ post.title }}</a></h1>
         <p>{{ post.text|truncatechars:200 }}</p>
-        <a href="{% url 'likes' post_id=post.pk%}">
-            <button type="button" class="btn btn-default" id="likes-button" aria-label="Left Align">
-                <span class="glyphicon glyphicon-heart" aria-hidden="true"></span> {{ post.num_votes}}
-            </button>
-        </a>
+        {% if user.is_authenticated %}
+            {% if post in user_likes %}
+                    <button type="button" class="btn btn-default likes liked" aria-label="Left Align"
+                            data-post="{{ post.pk }}" data-action="like-post">
+                        <span class="glyphicon glyphicon-heart" aria-hidden="true"></span>
+                        <span class="count">{{ post.num_votes}}</span>
+                    </button>
+            {% else %}
+                    <button type="button" class="btn btn-default likes" aria-label="Left Align"
+                            data-post="{{ post.pk }}" data-action="like-post">
+                        <span class="glyphicon glyphicon-heart" aria-hidden="true"></span>
+                        <span class="count">{{ post.num_votes}}</span>
+                    </button>
+            {% endif %}
+        {% else %}
+            <a href="{% url 'login' %}">
+                <button type="button" class="btn btn-default likes" aria-label="Left Align">
+                    <span class="glyphicon glyphicon-heart" aria-hidden="true"></span>
+                    <span class="count">{{ post.num_votes}}</span>
+                </button>
+            </a>
+        {% endif %}
     </div>
 {% endfor %}
 
@@ -25,5 +43,8 @@
                 ({{ author.author__username__count}})</h4></li>
         </ul>
     {% endfor %}
+{% endblock %}
+{% block js %}
+    <script src="{% static 'js/like.js' %}"></script>
 {% endblock %}
 

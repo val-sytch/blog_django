@@ -11,5 +11,5 @@ urlpatterns = [
     url(r'^drafts/(?P<author>\w+)/$', views.post_draft_list, name='post_draft_list'),
     url(r'^signup/$', views.sign_up, name='sign_up'),
     url(r'^posts/all/(?P<author>\w+)/$', views.posts_author, name='posts_author'),
-    url(r'^likes/(?P<post_id>\d+)/$', views.likes, name='likes'),
+    url(r'^likes/$', views.likes, name='likes')
 ]
