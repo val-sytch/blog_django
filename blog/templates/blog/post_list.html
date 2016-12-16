@@ -1,5 +1,14 @@
 {% extends 'blog/base.html' %}
 {% load staticfiles%}
+{% block sorting %}
+    <form name=SortItemsBy action="{% url 'post_list' %}"method="POST">{% csrf_token %}
+        <select class="selectpicker" data-style="btn-info" onChange="SortItemsBy.submit();">
+            <option value="old_first" SELECTED>Old first</option>
+            <option value="new_first">New first</option>
+            <option value="popular">Popular</option>
+        </select>
+    </form>
+{% endblock %}
 {% block content %}
 {% for post in posts %}
     <div class="post">

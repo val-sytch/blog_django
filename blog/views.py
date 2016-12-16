@@ -6,18 +6,28 @@ from django.db.models import Count
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from .models import Post
-from .forms import PostForm
+from .forms import PostForm, SortItemsBy
 
 
 def post_list(request):
     """
     Main page(only posts that have published date filled in)
     """
-    posts = Post.objects.filter(published_date__lte=timezone.now()).order_by('published_date')\
-        .annotate(num_votes=Count('votes__object_id'))
+    if request.method == "POST":
+        form = SortItemsBy(request.POST)
+        print(form)
+    # if sorted == 'old_first':
+    #     posts = Post.objects.filter(published_date__lte=timezone.now()).order_by('published_date')\
+    #         .annotate(num_votes=Count('votes__object_id'))
+    # elif sorted == 'new_first':
+    #     posts = Post.objects.filter(published_date__lte=timezone.now()).order_by('-published_date')\
+    #         .annotate(num_votes=Count('votes__object_id'))
+    # else:
+    posts = Post.objects.filter(published_date__lte=timezone.now()).annotate(num_votes=Count('votes__object_id'))\
+            .order_by('num_votes')
     authors = Post.objects.filter(published_date__lte=timezone.now()).values('author__username')\
-        .annotate(Count('author__username')).order_by('-author__username__count')
-    # QuerySet with posts that were liked by user(who is authentificated now)
+            .annotate(Count('author__username')).order_by('-author__username__count')
+        # QuerySet with posts that were liked by user(who is authenticated now)
     user_likes = Post.votes.all(request.user.id)
     context = {
         'posts': posts,
