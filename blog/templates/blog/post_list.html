@@ -1,13 +1,17 @@
 {% extends 'blog/base.html' %}
 {% load staticfiles%}
 {% block sorting %}
-    <form name=SortItemsBy action="{% url 'post_list' %}"method="POST">{% csrf_token %}
-        <select class="selectpicker" data-style="btn-info" onChange="SortItemsBy.submit();">
-            <option value="old_first" SELECTED>Old first</option>
-            <option value="new_first">New first</option>
-            <option value="popular">Popular</option>
-        </select>
-    </form>
+<form class="form-inline" role="form">
+    <div class="form-group">
+        <label class="control-label" for="sorting-select">Sort by:</label>
+            <select onchange="location.href = this[this.selectedIndex].value;" class="form-control" id="sorting-select">
+                {% for name, option in blog_entries_sort_options %}
+                <option{% if name == sorted %} selected{% endif %} value="?sort={{ name }}"> {{ option }}
+                </option>
+                {% endfor %}
+            </select>
+    </div>
+</form>
 {% endblock %}
 {% block content %}
 {% for post in posts %}

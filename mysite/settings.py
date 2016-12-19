@@ -105,3 +105,9 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 LOGIN_REDIRECT_URL = '/'
+
+BLOG_ENTRIES_SORT_OPTIONS = (
+    ('new_first', 'New first'),
+    ('old_first', 'Old first'),
+    ('popular', 'Popular')
+)

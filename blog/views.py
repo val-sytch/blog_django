@@ -7,32 +7,33 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from .models import Post
 from .forms import PostForm, SortItemsBy
+from mysite.settings import BLOG_ENTRIES_SORT_OPTIONS
 
 
 def post_list(request):
     """
     Main page(only posts that have published date filled in)
     """
-    if request.method == "POST":
-        form = SortItemsBy(request.POST)
-        print(form)
-    # if sorted == 'old_first':
-    #     posts = Post.objects.filter(published_date__lte=timezone.now()).order_by('published_date')\
-    #         .annotate(num_votes=Count('votes__object_id'))
-    # elif sorted == 'new_first':
-    #     posts = Post.objects.filter(published_date__lte=timezone.now()).order_by('-published_date')\
-    #         .annotate(num_votes=Count('votes__object_id'))
-    # else:
-    posts = Post.objects.filter(published_date__lte=timezone.now()).annotate(num_votes=Count('votes__object_id'))\
-            .order_by('num_votes')
+    sorted = request.GET.get('sort','')
+    if sorted in ['', 'new_first']:
+        posts = Post.objects.filter(published_date__lte=timezone.now()).order_by('-published_date')\
+            .annotate(num_votes=Count('votes__object_id'))
+    elif sorted == 'old_first':
+        posts = Post.objects.filter(published_date__lte=timezone.now()).order_by('published_date')\
+            .annotate(num_votes=Count('votes__object_id'))
+    elif sorted == 'popular':
+        posts = Post.objects.filter(published_date__lte=timezone.now()).annotate(num_votes=Count('votes__object_id'))\
+                .order_by('num_votes')
     authors = Post.objects.filter(published_date__lte=timezone.now()).values('author__username')\
             .annotate(Count('author__username')).order_by('-author__username__count')
-        # QuerySet with posts that were liked by user(who is authenticated now)
+    # QuerySet with posts that were liked by user(who is authenticated now)
     user_likes = Post.votes.all(request.user.id)
     context = {
         'posts': posts,
         'authors': authors,
-        'user_likes': user_likes
+        'user_likes': user_likes,
+        'blog_entries_sort_options': BLOG_ENTRIES_SORT_OPTIONS,
+        'sorted': sorted
     }
     return render(request, 'blog/post_list.html', context)
 
@@ -41,8 +42,16 @@ def posts_author(request, author):
     """
     Page with posts for selected author
     """
-    posts = Post.objects.filter(author__username=author).filter(published_date__lte=timezone.now()).\
-        order_by('published_date').annotate(num_votes=Count('votes__object_id'))
+    sorted = request.GET.get('sort', '')
+    if sorted in ['', 'new_first']:
+        posts = Post.objects.filter(author__username=author).filter(published_date__lte=timezone.now()).\
+            order_by('-published_date').annotate(num_votes=Count('votes__object_id'))
+    elif sorted == 'old_first':
+        posts = Post.objects.filter(author__username=author).filter(published_date__lte=timezone.now()). \
+            order_by('published_date').annotate(num_votes=Count('votes__object_id'))
+    elif sorted == 'popular':
+        posts = Post.objects.filter(author__username=author).filter(published_date__lte=timezone.now()).\
+            annotate(num_votes=Count('votes__object_id')).order_by('num_votes')
     authors = Post.objects.filter(published_date__lte=timezone.now()).values('author__username')\
         .annotate(Count('author__username')).order_by('-author__username__count')
     user_likes = Post.votes.all(request.user.id)
@@ -50,7 +59,9 @@ def posts_author(request, author):
         'posts': posts,
         'authors': authors,
         'single_author': author,
-        'user_likes': user_likes
+        'user_likes': user_likes,
+        'blog_entries_sort_options': BLOG_ENTRIES_SORT_OPTIONS,
+        'sorted': sorted
     }
     return render(request, 'blog/posts_author.html', context)
 

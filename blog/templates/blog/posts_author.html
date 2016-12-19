@@ -1,5 +1,18 @@
 {% extends 'blog/base.html' %}
 {% load staticfiles%}
+{% block sorting %}
+<form class="form-inline" role="form">
+    <div class="form-group">
+        <label class="control-label" for="sorting-select">Sort by:</label>
+            <select onchange="location.href = this[this.selectedIndex].value;" class="form-control" id="sorting-select">
+                {% for name, option in blog_entries_sort_options %}
+                <option{% if name == sorted %} selected{% endif %} value="?sort={{ name }}"> {{ option }}
+                </option>
+                {% endfor %}
+            </select>
+    </div>
+</form>
+{% endblock %}
 {% block content %}
 {% for post in posts %}
     <div class="post">
