@@ -23,7 +23,7 @@ def post_list(request):
             .annotate(num_votes=Count('votes__object_id'))
     elif sorted == 'popular':
         posts = Post.objects.filter(published_date__lte=timezone.now()).annotate(num_votes=Count('votes__object_id'))\
-                .order_by('num_votes')
+                .order_by('-num_votes')
     authors = Post.objects.filter(published_date__lte=timezone.now()).values('author__username')\
             .annotate(Count('author__username')).order_by('-author__username__count')
     # QuerySet with posts that were liked by user(who is authenticated now)
@@ -51,7 +51,7 @@ def posts_author(request, author):
             order_by('published_date').annotate(num_votes=Count('votes__object_id'))
     elif sorted == 'popular':
         posts = Post.objects.filter(author__username=author).filter(published_date__lte=timezone.now()).\
-            annotate(num_votes=Count('votes__object_id')).order_by('num_votes')
+            annotate(num_votes=Count('votes__object_id')).order_by('-num_votes')
     authors = Post.objects.filter(published_date__lte=timezone.now()).values('author__username')\
         .annotate(Count('author__username')).order_by('-author__username__count')
     user_likes = Post.votes.all(request.user.id)
