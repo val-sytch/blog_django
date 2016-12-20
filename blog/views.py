@@ -14,16 +14,16 @@ def post_list(request):
     """
     Main page(only posts that have published date filled in)
     """
-    sorted = request.GET.get('sort','')
-    if sorted in ['', 'new_first']:
-        posts = Post.objects.filter(published_date__lte=timezone.now()).order_by('-published_date')\
-            .annotate(num_votes=Count('votes__object_id'))
-    elif sorted == 'old_first':
-        posts = Post.objects.filter(published_date__lte=timezone.now()).order_by('published_date')\
-            .annotate(num_votes=Count('votes__object_id'))
-    elif sorted == 'popular':
-        posts = Post.objects.filter(published_date__lte=timezone.now()).annotate(num_votes=Count('votes__object_id'))\
+    sorted = request.GET.get('sort','new_first')
+    sorted_param = {
+        'new_first': Post.objects.filter(published_date__lte=timezone.now()).order_by('-published_date')
+            .annotate(num_votes=Count('votes__object_id')),
+        'old_first': Post.objects.filter(published_date__lte=timezone.now()).order_by('published_date')\
+            .annotate(num_votes=Count('votes__object_id')),
+        'popular': Post.objects.filter(published_date__lte=timezone.now()).annotate(num_votes=Count('votes__object_id'))\
                 .order_by('-num_votes')
+    }
+    posts = sorted_param[sorted]
     authors = Post.objects.filter(published_date__lte=timezone.now()).values('author__username')\
             .annotate(Count('author__username')).order_by('-author__username__count')
     # QuerySet with posts that were liked by user(who is authenticated now)
@@ -42,16 +42,16 @@ def posts_author(request, author):
     """
     Page with posts for selected author
     """
-    sorted = request.GET.get('sort', '')
-    if sorted in ['', 'new_first']:
-        posts = Post.objects.filter(author__username=author).filter(published_date__lte=timezone.now()).\
-            order_by('-published_date').annotate(num_votes=Count('votes__object_id'))
-    elif sorted == 'old_first':
-        posts = Post.objects.filter(author__username=author).filter(published_date__lte=timezone.now()). \
-            order_by('published_date').annotate(num_votes=Count('votes__object_id'))
-    elif sorted == 'popular':
-        posts = Post.objects.filter(author__username=author).filter(published_date__lte=timezone.now()).\
+    sorted = request.GET.get('sort', 'new_first')
+    sorted_param = {
+        'new_first': Post.objects.filter(author__username=author).filter(published_date__lte=timezone.now()).\
+            order_by('-published_date').annotate(num_votes=Count('votes__object_id')),
+        'old_first': Post.objects.filter(author__username=author).filter(published_date__lte=timezone.now()). \
+            order_by('published_date').annotate(num_votes=Count('votes__object_id')),
+        'popular': Post.objects.filter(author__username=author).filter(published_date__lte=timezone.now()).\
             annotate(num_votes=Count('votes__object_id')).order_by('-num_votes')
+    }
+    posts = sorted_param[sorted]
     authors = Post.objects.filter(published_date__lte=timezone.now()).values('author__username')\
         .annotate(Count('author__username')).order_by('-author__username__count')
     user_likes = Post.votes.all(request.user.id)
