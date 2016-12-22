@@ -38,7 +38,9 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'blog',
+    'blog_api',
     'vote',
+    'rest_framework',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -111,3 +113,11 @@ BLOG_ENTRIES_SORT_OPTIONS = (
     ('old_first', 'Old first'),
     ('popular', 'Popular')
 )
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    )
+}
