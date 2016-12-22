@@ -1,8 +1,10 @@
-from django.http import JsonResponse
+from django.db.models import Count, Q
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count
+from django.core import serializers
+from django.http import HttpResponse, JsonResponse
+from django.template.loader import render_to_string
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from .models import Post
@@ -153,7 +155,7 @@ def sign_up(request):
 
 def likes(request):
     """
-    Add or remove like from post
+    Add or remove like from post. AJAX
     """
     article = Post.objects.get(pk=request.GET.get("post"))
     user_vote = article.votes.exists(request.user.id)
@@ -168,4 +170,16 @@ def likes(request):
         'is_liked': is_liked
     }
     return JsonResponse(context, safe=False)
+
+
+def search(request):
+    """
+    AJAX searching
+    """
+    num_of_posts = 10
+    if request.GET.get('query'):
+        query = request.GET.get('query')
+        posts = Post.objects.filter(Q(title__icontains=query)|Q(text__icontains=query))[:num_of_posts]
+        html = render_to_string('blog/search_result.html', {'posts': posts})
+        return HttpResponse(html)
 

@@ -1,0 +1,17 @@
+{% block content %}
+{% if posts|length != 0%}
+<h2>Results:</h2>
+<ol>
+    {% for post in posts %}
+        <li><div class="post-search">
+            <h5><a href="{% url 'post_detail' pk=post.pk %}">{{ post.title }}</a></h5>
+            <p>{{ post.text|truncatechars:100 }}</p>
+        </div></li>
+    {% endfor %}
+</ol>
+{% else %}
+    <p> No results match your query</p>
+{% endif %}
+{% endblock %}
+
+
