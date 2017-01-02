@@ -1,8 +1,10 @@
-from django.http import JsonResponse
+from django.db.models import Count, Q
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count
+from django.core import serializers
+from django.http import HttpResponse, JsonResponse
+from django.template.loader import render_to_string
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from .models import Post
@@ -14,16 +16,16 @@ def post_list(request):
     """
     Main page(only posts that have published date filled in)
     """
-    sorted = request.GET.get('sort','')
-    if sorted in ['', 'new_first']:
-        posts = Post.objects.filter(published_date__lte=timezone.now()).order_by('-published_date')\
-            .annotate(num_votes=Count('votes__object_id'))
-    elif sorted == 'old_first':
-        posts = Post.objects.filter(published_date__lte=timezone.now()).order_by('published_date')\
-            .annotate(num_votes=Count('votes__object_id'))
-    elif sorted == 'popular':
-        posts = Post.objects.filter(published_date__lte=timezone.now()).annotate(num_votes=Count('votes__object_id'))\
+    sorted = request.GET.get('sort','new_first')
+    sorted_param = {
+        'new_first': Post.objects.filter(published_date__lte=timezone.now()).order_by('-published_date')
+            .annotate(num_votes=Count('votes__object_id')),
+        'old_first': Post.objects.filter(published_date__lte=timezone.now()).order_by('published_date')\
+            .annotate(num_votes=Count('votes__object_id')),
+        'popular': Post.objects.filter(published_date__lte=timezone.now()).annotate(num_votes=Count('votes__object_id'))\
                 .order_by('-num_votes')
+    }
+    posts = sorted_param[sorted]
     authors = Post.objects.filter(published_date__lte=timezone.now()).values('author__username')\
             .annotate(Count('author__username')).order_by('-author__username__count')
     # QuerySet with posts that were liked by user(who is authenticated now)
@@ -42,16 +44,16 @@ def posts_author(request, author):
     """
     Page with posts for selected author
     """
-    sorted = request.GET.get('sort', '')
-    if sorted in ['', 'new_first']:
-        posts = Post.objects.filter(author__username=author).filter(published_date__lte=timezone.now()).\
-            order_by('-published_date').annotate(num_votes=Count('votes__object_id'))
-    elif sorted == 'old_first':
-        posts = Post.objects.filter(author__username=author).filter(published_date__lte=timezone.now()). \
-            order_by('published_date').annotate(num_votes=Count('votes__object_id'))
-    elif sorted == 'popular':
-        posts = Post.objects.filter(author__username=author).filter(published_date__lte=timezone.now()).\
+    sorted = request.GET.get('sort', 'new_first')
+    sorted_param = {
+        'new_first': Post.objects.filter(author__username=author).filter(published_date__lte=timezone.now()).\
+            order_by('-published_date').annotate(num_votes=Count('votes__object_id')),
+        'old_first': Post.objects.filter(author__username=author).filter(published_date__lte=timezone.now()). \
+            order_by('published_date').annotate(num_votes=Count('votes__object_id')),
+        'popular': Post.objects.filter(author__username=author).filter(published_date__lte=timezone.now()).\
             annotate(num_votes=Count('votes__object_id')).order_by('-num_votes')
+    }
+    posts = sorted_param[sorted]
     authors = Post.objects.filter(published_date__lte=timezone.now()).values('author__username')\
         .annotate(Count('author__username')).order_by('-author__username__count')
     user_likes = Post.votes.all(request.user.id)
@@ -153,7 +155,7 @@ def sign_up(request):
 
 def likes(request):
     """
-    Add or remove like from post
+    Add or remove like from post. AJAX
     """
     article = Post.objects.get(pk=request.GET.get("post"))
     user_vote = article.votes.exists(request.user.id)
@@ -168,4 +170,16 @@ def likes(request):
         'is_liked': is_liked
     }
     return JsonResponse(context, safe=False)
+
+
+def search(request):
+    """
+    AJAX searching
+    """
+    num_of_posts = 10
+    if request.GET.get('query'):
+        query = request.GET.get('query')
+        posts = Post.objects.filter(Q(title__icontains=query)|Q(text__icontains=query))[:num_of_posts]
+        html = render_to_string('blog/search_result.html', {'posts': posts})
+        return HttpResponse(html)
 

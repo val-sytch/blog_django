@@ -1,7 +1,7 @@
 {% extends 'blog/base.html' %}
 {% load staticfiles%}
 {% block sorting %}
-<form class="form-inline" role="form">
+<form class="navbar-form navbar-right" role="form">
     <div class="form-group">
         <label class="control-label" for="sorting-select">Sort by:</label>
             <select onchange="location.href = this[this.selectedIndex].value;" class="form-control" id="sorting-select">
