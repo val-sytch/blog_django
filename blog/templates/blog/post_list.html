@@ -4,58 +4,69 @@
 <form class="navbar-form navbar-right" role="form">
     <div class="form-group">
         <label class="control-label" for="sorting-select">Sort by:</label>
-            <select onchange="location.href = this[this.selectedIndex].value;" class="form-control" id="sorting-select">
-                {% for name, option in blog_entries_sort_options %}
-                <option{% if name == sorted %} selected{% endif %} value="?sort={{ name }}"> {{ option }}
-                </option>
-                {% endfor %}
-            </select>
+        <select onchange="location.href = this[this.selectedIndex].value;" class="form-control" id="sorting-select">
+            {% for name, option in blog_entries_sort_options %}
+            <option{% if name == sorted %} selected{% endif %} value="?sort={{ name }}"> {{ option }}
+            </option>
+            {% endfor %}
+        </select>
     </div>
 </form>
 {% endblock %}
 {% block content %}
 {% for post in posts %}
     <div class="post">
-        <div class="date">
-            <span class="label label-default">{{ post.published_date }}</span>
-            <span class="label label-primary">by {{ post.author }} </span>
-        </div>
-        <h1><a href="{% url 'post_detail' pk=post.pk %}">{{ post.title }}</a></h1>
-        <p>{{ post.text|truncatechars:200 }}</p>
-        {% if user.is_authenticated %}
-            {% if post in user_likes %}
-                    <button type="button" class="btn btn-default likes liked" aria-label="Left Align"
-                            data-post="{{ post.pk }}" data-action="like-post">
-                        <span class="glyphicon glyphicon-heart" aria-hidden="true"></span>
-                        <span class="count">{{ post.num_votes}}</span>
-                    </button>
+        <div class="post-info">
+            <h4 class="post-title">
+                <a href="{% url 'post_detail' pk=post.pk %}">{{ post.title }}</a>
+            </h4>
+            <p class="posted">
+                <span class="date">Published on {{ post.published_date }}</span>
+                <span class="author">by {{ post.author }} </span>
+                <span class="separator">/</span>
+                <span>Comments: {{ post.approved_comments.count }}</span>
+            </p>
+            <p class="text">{{ post.text|truncatechars:200 }}</p>
+            {% if user.is_authenticated %}
+                {% if post in user_likes %}
+                        <button type="button" class="btn btn-default likes liked" aria-label="Left Align"
+                                data-post="{{ post.pk }}" data-action="like-post">
+                            <span class="glyphicon glyphicon-heart" aria-hidden="true"></span>
+                            <span class="count">{{ post.num_votes}}</span>
+                        </button>
+                {% else %}
+                        <button type="button" class="btn btn-default likes" aria-label="Left Align"
+                                data-post="{{ post.pk }}" data-action="like-post">
+                            <span class="glyphicon glyphicon-heart" aria-hidden="true"></span>
+                            <span class="count">{{ post.num_votes}}</span>
+                        </button>
+                {% endif %}
             {% else %}
-                    <button type="button" class="btn btn-default likes" aria-label="Left Align"
-                            data-post="{{ post.pk }}" data-action="like-post">
+                <a href="{% url 'login' %}">
+                    <button type="button" class="btn btn-default likes" aria-label="Left Align">
                         <span class="glyphicon glyphicon-heart" aria-hidden="true"></span>
                         <span class="count">{{ post.num_votes}}</span>
                     </button>
+                </a>
             {% endif %}
-        {% else %}
-            <a href="{% url 'login' %}">
-                <button type="button" class="btn btn-default likes" aria-label="Left Align">
-                    <span class="glyphicon glyphicon-heart" aria-hidden="true"></span>
-                    <span class="count">{{ post.num_votes}}</span>
-                </button>
-            </a>
-        {% endif %}
+        </div>
     </div>
 {% endfor %}
 
 {% endblock %}
 {% block content1 %}
-    <h2>Our authors:</h2>
-    {% for author in authors %}
+    <div class="authors">
+        <h2>Our authors:</h2>
         <ul>
-            <li><h4><a href="{% url 'posts_author' author=author.author__username %}">{{ author.author__username}}</a>
-                ({{ author.author__username__count}})</h4></li>
+            {% for author in authors %}
+                <li>
+                    <a class="{% if author.author__username == single_author %}active{% endif %}"
+                       href="{% url 'posts_author' author=author.author__username %}">{{ author.author__username}}</a>
+                    <span>({{ author.author__username__count}})</span>
+                </li>
+            {% endfor %}
         </ul>
-    {% endfor %}
+    </div>
 {% endblock %}
 {% block js %}
     <script src="{% static 'js/like.js' %}"></script>

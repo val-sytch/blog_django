@@ -11,6 +11,9 @@ urlpatterns = [
     url(r'^drafts/(?P<author>\w+)/$', views.post_draft_list, name='post_draft_list'),
     url(r'^signup/$', views.sign_up, name='sign_up'),
     url(r'^posts/all/(?P<author>\w+)/$', views.posts_author, name='posts_author'),
+    url(r'^post/(?P<pk>\d+)/comment/$', views.add_comment_to_post, name='add_comment_to_post'),
+    url(r'^comment/(?P<pk>\d+)/approve/$', views.comment_approve, name='comment_approve'),
+    url(r'^comment/(?P<pk>\d+)/remove/$', views.comment_remove, name='comment_remove'),
     url(r'^likes/$', views.likes, name='likes'),
     url(r'^search/$', views.search, name='search'),
 ]

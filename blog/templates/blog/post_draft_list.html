@@ -3,10 +3,16 @@
 {% block content %}
     {% for post in posts %}
         <div class="post">
-            <span class="label label-primary">by {{ post.author }} </span>
-            <p class="date">created: {{ post.created_date|date:'d-m-Y' }}</p>
-            <h1><a href="{% url 'post_detail' pk=post.pk %}">{{ post.title }}</a></h1>
-            <p>{{ post.text|truncatechars:200 }}</p>
+            <div class="post-info">
+                <h4 class="post-title">
+                    <a href="{% url 'post_detail' pk=post.pk %}">{{ post.title }}</a>
+                </h4>
+                <p class="posted">
+                    <span class="date">Created on {{ post.created_date|date:'d-m-Y' }}</span>
+                    <span class="author">by {{ post.author }} </span>
+                </p>
+                <p>{{ post.text|truncatechars:200 }}</p>
+            </div>
         </div>
     {% endfor %}
 {% endblock %}

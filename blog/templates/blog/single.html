@@ -2,26 +2,27 @@
 {% load staticfiles%}
 {% block content %}
 <div class="post">
-    <div class="date">
-        <span class="label label-primary">by {{ post.author }} </span>
-        {% if post.published_date %}
-            <span class="label label-default">{{ post.published_date }}</span>
-        {% else %}
-            {% if user.is_authenticated and user == post.author%}
-                <a class="btn btn-default" href="{% url 'post_publish' pk=post.pk %}">Publish</a>
+    <div class="post-info">
+        <div class="date">
+            <!--<span class="label label-primary">by {{ post.author }} </span>-->
+            {% if post.published_date %}
+                <span class="label label-default">{{ post.published_date }}</span>
+            {% else %}
+                {% if user.is_authenticated and user == post.author%}
+                    <a class="btn btn-success" href="{% url 'post_publish' pk=post.pk %}">Publish</a>
+                {% endif %}
             {% endif %}
-        {% endif %}
             {% if user.is_authenticated and user == post.author %}
-                <a class="btn btn-default" href="{% url 'post_edit' pk=post.pk %}">
+                <a class="btn btn-primary" href="{% url 'post_edit' pk=post.pk %}">
                     <span class="glyphicon glyphicon-pencil"></span></a>
-                <a class="btn btn-default" href="{% url 'post_remove' pk=post.pk %}">
+                <a class="btn btn-danger" href="{% url 'post_remove' pk=post.pk %}">
                     <span class="glyphicon glyphicon-remove"></span></a>
             {% endif %}
-    </div>
+        </div>
 
-    <h1>{{ post.title }}</h1>
-    <p>{{ post.text|linebreaksbr }}</p>
-    {% if user.is_authenticated %}
+        <h1>{{ post.title }}</h1>
+        <p>{{ post.text|linebreaksbr }}</p>
+        {% if user.is_authenticated %}
             {% if post in user_likes %}
                     <button type="button" class="btn btn-default likes liked" aria-label="Left Align"
                             data-post="{{ post.pk }}" data-action="like-post">
@@ -43,7 +44,28 @@
                 </button>
             </a>
         {% endif %}
+    </div>
 </div>
+<hr>
+<a class="btn btn-default" href="{% url 'add_comment_to_post' pk=post.pk %}">Add comment</a>
+{% for comment in post.comments.all %}
+    {% if user.is_authenticated or comment.approved_comment %}
+    <div class="comment">
+        <div class="date">
+            {{ comment.created_date }}
+            {% if not comment.approved_comment %}
+                <a class="btn btn-default" href="{% url 'comment_remove' pk=comment.pk %}"><span class="glyphicon glyphicon-remove"></span></a>
+                <a class="btn btn-default" href="{% url 'comment_approve' pk=comment.pk %}"><span class="glyphicon glyphicon-ok"></span></a>
+            {% endif %}
+        </div>
+        <strong>{{ comment.author }}</strong>
+        <p>{{ comment.text|linebreaks }}</p>
+    </div>
+    {% endif %}
+{% empty %}
+    <p>No comments here yet :(</p>
+{% endfor %}
+
 {% endblock content %}
 {% block js %}
     <script src="{% static 'js/like.js' %}"></script>

@@ -27,14 +27,7 @@
                 if (xhr.status >= 200 && xhr.status < 400) {
                     var content = document.getElementById('main-content-block');
                     content.innerHTML = xhr.responseText;
-                    // console.log(xhr.responseText);
-                    // var response = xhr.responseText,
-                    //     count = el.querySelector('span.count');
-                    //
-                    // response = JSON.parse(response);
-                    //
-                    // response.is_liked ? el.classList.add('liked') : el.classList.remove('liked');
-                    // count.innerHTML = response.num_likes;
+
                     isLoading = !isLoading;
                 }
                 else {
