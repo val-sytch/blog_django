@@ -2,13 +2,12 @@ from django.db.models import Count, Q
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
-from django.core import serializers
 from django.http import HttpResponse, JsonResponse
 from django.template.loader import render_to_string
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
-from .models import Post
-from .forms import PostForm
+from .models import Post, Comment
+from .forms import PostForm, CommentForm
 from mysite.settings import BLOG_ENTRIES_SORT_OPTIONS
 
 
@@ -65,7 +64,7 @@ def posts_author(request, author):
         'blog_entries_sort_options': BLOG_ENTRIES_SORT_OPTIONS,
         'sorted': sorted
     }
-    return render(request, 'blog/posts_author.html', context)
+    return render(request, 'blog/post_list.html', context)
 
 
 def post_detail(request, pk):
@@ -151,6 +150,34 @@ def sign_up(request):
     else:
         form = UserCreationForm()
     return render(request, 'registration/sign_up.html',{'form': form})
+
+
+def add_comment_to_post(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+    if request.method == "POST":
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.post = post
+            comment.save()
+            return redirect('post_detail', pk=post.pk)
+    else:
+        form = CommentForm()
+    return render(request, 'blog/add_comment_to_post.html', {'form': form})
+
+
+@login_required
+def comment_approve(request, pk):
+    comment = get_object_or_404(Comment, pk=pk)
+    comment.approve()
+    return redirect('post_detail', pk=comment.post.pk)
+
+@login_required
+def comment_remove(request, pk):
+    comment = get_object_or_404(Comment, pk=pk)
+    post_pk = comment.post.pk
+    comment.delete()
+    return redirect('post_detail', pk=post_pk)
 
 
 def likes(request):
