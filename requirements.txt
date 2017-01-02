@@ -1,5 +1,6 @@
 Django==1.8
 django-vote==2.1.2
+djangorestframework==3.5.3
 ecdsa==0.13
 Fabric3==1.12.post1
 paramiko==1.18.0
